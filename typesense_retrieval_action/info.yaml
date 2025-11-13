@@ -1,0 +1,20 @@
+package:
+  name: jivas/typesense_retrieval_action
+  author: V75 Inc.
+  archetype: TypesenseRetrievalAction
+  version: 0.1.0
+  meta:
+    title: Typesense Retrieval Action
+    description: Implements standard retrieval operations against the typesense store for retrieval augmented generation tasks
+    group: core
+    type: action
+  config:
+    singleton: true
+    order:
+      weight: 0
+      before: jivas/persona_interact_action
+  dependencies:
+    jivas: ~2.1.0
+    actions:
+      jivas/persona_interact_action: "~0.1.0"
+      jivas/typesense_vector_store_action: "~0.1.0"
