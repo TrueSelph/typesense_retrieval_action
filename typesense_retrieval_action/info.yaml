@@ -2,7 +2,7 @@ package:
   name: jivas/typesense_retrieval_action
   author: V75 Inc.
   archetype: TypesenseRetrievalAction
-  version: 0.2.0
+  version: 0.2.1
   meta:
     title: Typesense Retrieval Action
     description: Implements standard retrieval operations against the typesense store for retrieval augmented generation tasks

@@ -4,9 +4,9 @@ import traceback;
 import from typing { Optional, Union }
 import from logging { Logger }
 import from jivas.agent.action.action { Action }
-import from jivas.agent.action.model_action { ModelAction, ModelActionResult }
+import from jivas.agent.action.retrieval_action { RetrievalAction }
 
-node TypesenseRetrievalAction(Action) {
+node TypesenseRetrievalAction(RetrievalAction) {
     # Integrates with vector database for retrieval augmented generation tasks
 
     # set up logger
@@ -23,7 +23,7 @@ node TypesenseRetrievalAction(Action) {
     """;
 
     # the null directive template for RAG
-    has null_directive:str = "No context information was retrieved based on user utterance. If the user utterance is a question which relates to your knowledge, advise them that you do not have the relevant information at this time to answer their question.\n";
+    has null_directive:str = "No context information was retrieved based on user utterance. If there is no other information available in this prompt or the converation history that can help answer the user's question, advise the user that you do not have the relevant information at this time to answer their question.\n";
 
     # context_rewriting_prompt
     has query_completion_prompt:str = """
@@ -65,9 +65,15 @@ node TypesenseRetrievalAction(Action) {
     has history_size:int = 3;
     has max_statement_length:int = 400;
     has model_action:str = "LangChainModelAction";
-    has model_name:str = "gpt-4o";
+    has model_name:str = "gpt-4.1";
     has model_temperature:float = 0.2;
     has model_max_tokens:int = 10000;
+    has parameters:list = [
+        {
+            "condition": "user requests information or data that cannot be answered by information contained in your role, description or capabilities",
+            "action": "TypesenseRetrievalAction"
+        }
+    ];
 
     def on_register() {
 
@@ -113,10 +119,7 @@ node TypesenseRetrievalAction(Action) {
             # add the context directive to the interaction node
             interaction_node.add_directive(directive = context_directive);
         } else {
-            directives = interaction_node.get_directives();
-            if(not directives) {
-                interaction_node.add_directive(directive = self.null_directive);
-            }
+            interaction_node.add_directive(directive = self.null_directive);
         }
 
         interaction_node.data_set(key=self.get_type(), value=interaction_context);
@@ -139,7 +142,7 @@ node TypesenseRetrievalAction(Action) {
 
             if(model_action := self.get_agent().get_action(action_label=self.model_action)) {
 
-                 if( model_action_result := model_action.call_model(
+                if( model_action_result := model_action.call_model(
                     prompt_messages = prompt_messages,
                     prompt_variables = {},
                     interaction_node = interaction_node,
